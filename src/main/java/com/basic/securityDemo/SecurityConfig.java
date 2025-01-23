@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.http.UserDetailsServiceFactoryBean;
 import org.springframework.security.core.userdetails.User;
@@ -22,10 +23,19 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
+        http.authorizeHttpRequests((requests) -> requests.requestMatchers("/h2-console/**").permitAll() //requestMatchers well as the name suggests matches requests and then performs action it.
+                .anyRequest().authenticated());
         http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         //http.formLogin(withDefaults());
         http.httpBasic(withDefaults());
+        http.headers(headers->
+                headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //if frames are blocked in the frontend
+        http.csrf(csrf->csrf.disable());//we gotta disble csrf as we are using stateless sessionManagement
+        /*
+        * Cross-Site Request Forgery (CSRF) is a type of security vulnerability
+        * that allows an attacker to perform actions on behalf of an authenticated user without their consent.
+        * To mitigate this risk, Spring Security enables CSRF protection by default for unsafe HTTP methods (like POST, PUT, DELETE).
+        * */
         return http.build();
     }
     @Bean
