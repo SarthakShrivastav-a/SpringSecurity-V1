@@ -1,5 +1,6 @@
 package com.basic.securityDemo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -12,7 +13,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.sql.DataSource;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -20,6 +24,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Autowired
+    DataSource dataSource;
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -49,6 +56,23 @@ public class SecurityConfig {
                 .roles("ADMIN")
                 .build();
 
-        return new InMemoryUserDetailsManager(user1,admin);// an obj of UserDetails is required
+
+        /*
+        * now To use this JDBC code, You first new to create table   for users authorizes and unique index
+        * basically this is Schema defination!
+        * go to github repo of springSecurity and under users.ddl you will find the schema
+        * create table users(username varchar_ignorecase(50) not null primary key,password varchar_ignorecase(500) not null,enabled boolean not null);
+        * create table authorities (username varchar_ignorecase(50) not null,authority varchar_ignorecase(50) not null,constraint fk_authorities_users foreign key(username) references users(username));
+        * create unique index ix_auth_username on authorities (username,authority);
+        * !!
+        *
+        * well this has to be stored in the file directory as h2 is inmemory database! Just store schema.sql under resources file and springboot will automatically handel it.
+        * */
+        JdbcUserDetailsManager userDetailsManager= new JdbcUserDetailsManager(dataSource);
+
+        userDetailsManager.createUser(user1);
+        userDetailsManager.createUser(admin);   //npow instead of creating a user in memory we are creating in db for future use.
+        return userDetailsManager;
+        //return new InMemoryUserDetailsManager(user1,admin);// an obj of UserDetails is required
     }
 }
