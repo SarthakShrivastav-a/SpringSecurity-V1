@@ -78,7 +78,7 @@ public class SecurityConfig {
         JdbcUserDetailsManager userDetailsManager= new JdbcUserDetailsManager(dataSource);
 
         userDetailsManager.createUser(user1);
-        userDetailsManager.createUser(admin);   //npow instead of creating a user in memory we are creating in db for future use.
+        userDetailsManager.createUser(admin);   //now instead of creating a user in memory we are creating in db for future use.
         return userDetailsManager;
         //return new InMemoryUserDetailsManager(user1,admin);// an obj of UserDetails is required
     }
