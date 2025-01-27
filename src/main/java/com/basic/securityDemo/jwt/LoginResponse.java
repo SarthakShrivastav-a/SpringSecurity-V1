@@ -1,6 +1,8 @@
 package com.basic.securityDemo.jwt;
 import java.util.List;
 
+
+// its good practice to have a separate file for response structure and request sstructure
 public class LoginResponse {
     private String jwtToken;
 
